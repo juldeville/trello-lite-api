@@ -19,4 +19,4 @@ const userSchema = new Schema<UserDocument>({
 const User = model<UserDocument>("User", userSchema);
 
 export default User;
-export { User };
+export { User, UserDocument };
