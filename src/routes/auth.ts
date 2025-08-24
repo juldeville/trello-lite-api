@@ -1,13 +1,9 @@
 import { Router } from "express";
-
+import { registerUser, loginUser } from "../controllers/authController";
+import { checkBody } from "../middlewares/checkBodyMiddleware";
 const router = Router();
 
-router.post("/register", (req, res) => {
-  // Handle user registration
-});
-
-router.post("/login", (req, res) => {
-  // Handle user login
-});
+router.post("/register", checkBody(["email", "name", "password"]), registerUser);
+router.post("/login", checkBody(["email", "password"]), loginUser);
 
 export default router;

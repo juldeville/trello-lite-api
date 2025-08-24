@@ -24,14 +24,21 @@ async function registerUser(req: Request, res: Response) {
 }
 
 async function loginUser(req: Request, res: Response) {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  // Validate and login user logic here
-  const user = await findUserByEmail(email);
-  if (!user || !authenticate(password, user.password)) {
-    return res.status(401).json({ message: "Invalid email or password" });
+    // Validate and login user logic here
+    const user = await findUserByEmail(email);
+    if (!user || !authenticate(password, user.password)) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    const token = generateToken({ id: user._id });
+    res.status(200).json({ message: "User logged in successfully", token });
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  const token = generateToken({ id: user._id });
-  res.status(200).json({ message: "User logged in successfully", token });
 }
+
+export { registerUser, loginUser };
