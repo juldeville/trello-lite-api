@@ -3,7 +3,7 @@ import { findUserByEmail, hashPassword, generateToken, authenticate } from "../s
 import { User } from "../models/User";
 async function registerUser(req: Request, res: Response) {
   try {
-    const { email, name, password } = req.body;
+    const { email, username, password } = req.body;
 
     // Validate and create user logic here
     const existingUser = await findUserByEmail(email);
@@ -13,7 +13,7 @@ async function registerUser(req: Request, res: Response) {
 
     const hashedPassword = await hashPassword(password);
     // Create user in the database
-    const newUser = new User({ email, name, password: hashedPassword });
+    const newUser = new User({ email, username, password: hashedPassword });
     await newUser.save();
     const token = generateToken({ id: newUser._id });
     res.status(201).json({ message: "User registered successfully", token });
