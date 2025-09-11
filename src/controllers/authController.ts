@@ -16,7 +16,7 @@ async function registerUser(req: Request, res: Response) {
     // Validate and create user logic here
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      return res.status(409).json({ result: false, message: "User already exists" });
     }
 
     const hashedPassword = await hashPassword(password);
@@ -28,10 +28,10 @@ async function registerUser(req: Request, res: Response) {
 
     const accessToken = signAccessToken({ id: newUser._id });
 
-    res.status(201).json({ message: "User registered successfully", accessToken });
+    res.status(201).json({ result: true, accessToken });
   } catch (error) {
     console.error("Error registering user:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ result: false, message: "Internal server error" });
   }
 }
 
@@ -42,23 +42,23 @@ async function loginUser(req: Request, res: Response) {
     // Validate and login user logic here
     const user = await findUserByEmail(email);
     if (!user || !authenticate(password, user.password)) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ result: false, message: "Invalid email or password" });
     }
 
     const refreshToken = signRefreshToken({ id: user._id });
     setRefreshCookie(res, refreshToken);
 
     const accessToken = signAccessToken({ id: user._id });
-    res.status(200).json({ message: "User logged in successfully", accessToken });
+    res.status(200).json({ result: true, accessToken });
   } catch (error) {
     console.error("Error logging in user:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ result: false, message: "Internal server error" });
   }
 }
 
 async function refresh(req: Request, res: Response) {
   const token = req.cookies.refreshToken;
-  if (!token) return res.status(401).json({ message: "No refresh token provided" });
+  if (!token) return res.status(401).json({ result: false, message: "No refresh token provided" });
 
   try {
     const payload = verifyRefreshToken(token) as TokenPayload;
@@ -66,36 +66,36 @@ async function refresh(req: Request, res: Response) {
     setRefreshCookie(res, newRefresh);
 
     const accessToken = signAccessToken({ id: payload.id });
-    res.status(200).json({ accessToken });
+    res.status(200).json({ result: true, accessToken });
   } catch (error) {
     console.error("Error refreshing token:", error);
     clearRefreshCookie(res);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ result: false, message: "Internal server error" });
   }
 }
 
 async function currentUser(req: Request, res: Response) {
   const auth = req.headers.authorization;
   if (!auth?.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+    return res.status(401).json({ result: false, message: "No token provided" });
   }
   try {
     const payload = verifyAccessToken(auth.split(" ")[1]) as TokenPayload;
     const user = await User.findById(payload.id);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ result: false, message: "User not found" });
     }
-    res.status(200).json({ user: { id: user._id, email: user.email, username: user.username } });
+    res.status(200).json({ result: true, user: { id: user._id, email: user.email, username: user.username } });
   } catch (error) {
     console.error("Error fetching current user:", error);
 
-    res.status(401).json({ message: "Invalid or expired token" });
+    res.status(401).json({ result: false, message: "Invalid or expired token" });
   }
 }
 
 async function logoutUser(req: Request, res: Response) {
   clearRefreshCookie(res);
-  res.status(200).json({ message: "User logged out successfully" });
+  res.status(200).json({ result: true });
 }
 
 export { registerUser, loginUser, refresh, currentUser, logoutUser };

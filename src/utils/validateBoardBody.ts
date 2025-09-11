@@ -18,4 +18,5 @@ function validateBoardBody(body: any) {
     },
   };
 }
+
 export default validateBoardBody;
