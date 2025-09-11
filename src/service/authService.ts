@@ -16,8 +16,4 @@ function authenticate(plainPassword: string, dbPassword: string): boolean {
   return bcrypt.compareSync(plainPassword, dbPassword);
 }
 
-function generateToken(payload: object): string {
-  return jwt.sign(payload, process.env.JWT_SECRET as string, { expiresIn: "1h" });
-}
-
-export { findUserByEmail, hashPassword, authenticate, generateToken };
+export { findUserByEmail, hashPassword, authenticate };
